@@ -1,0 +1,15 @@
+[tools]
+go = "1.26"
+golangci-lint = "2.12.2"
+
+[tasks.lint]
+description = "Run golangci-lint across all workspace modules"
+run = "{% raw %}golangci-lint run $(go list -m -f '{{.Dir}}/...'){% endraw %}"
+
+[tasks.format]
+description = "Run golangci-lint fmt across all workspace modules"
+run = "{% raw %}golangci-lint fmt $(go list -m -f '{{.Dir}}/...'){% endraw %}"
+
+[tasks.test]
+description = "Run go test across all workspace modules"
+run = "{% raw %}go test $(go list -m -f '{{.Dir}}/...'){% endraw %}"
