@@ -4,6 +4,9 @@
   "bump-minor-pre-major": true,
   "tag-separator": "/",
   "packages": {
+    "crypto": {
+      "component": "crypto"
+    },
     "seekbuf": {
       "component": "seekbuf"
     }
