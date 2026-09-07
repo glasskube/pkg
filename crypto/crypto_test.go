@@ -13,6 +13,7 @@ import (
 const (
 	key       = "correct horse battery staple"
 	plaintext = "the quick brown fox"
+	aad       = "jumps over the lazy dog"
 )
 
 // newT builds an [Encryptor] from k and fails the test if that does not succeed.
@@ -67,6 +68,47 @@ func TestRoundTripPayloads(t *testing.T) {
 			om.Expect(err).NotTo(g.HaveOccurred())
 			om.Expect(got).To(g.HaveLen(len(payload)))
 			om.Expect(bytes.Equal(got, payload)).To(g.BeTrue())
+		})
+	}
+}
+
+// TestRoundTripWithAAD asserts that additional authenticated data is bound to the ciphertext without becoming
+// part of it.
+func TestRoundTripWithAAD(t *testing.T) {
+	om := g.NewWithT(t)
+	e := newT(om, key)
+
+	ciphertext, err := e.EncryptWithAAD([]byte(plaintext), []byte(aad))
+	om.Expect(err).NotTo(g.HaveOccurred())
+	om.Expect(ciphertext).NotTo(g.ContainSubstring(plaintext))
+	om.Expect(ciphertext).NotTo(g.ContainSubstring(aad))
+	// The AAD is authenticated rather than stored, so it does not add to the length of the ciphertext.
+	om.Expect(ciphertext).To(g.HaveLen(e.gcm.NonceSize() + len(plaintext) + e.gcm.Overhead()))
+
+	got, err := e.DecryptWithAAD(ciphertext, []byte(aad))
+	om.Expect(err).NotTo(g.HaveOccurred())
+	om.Expect(string(got)).To(g.Equal(plaintext))
+}
+
+// TestDecryptWithAADMismatch asserts that a ciphertext only opens under the exact AAD it was sealed with.
+func TestDecryptWithAADMismatch(t *testing.T) {
+	type mismatch struct{ sealed, opened []byte }
+
+	for name, m := range map[string]mismatch{
+		"different aad":     {[]byte(aad), []byte("jumps over the lazy cat")},
+		"aad only on write": {[]byte(aad), nil},
+		"aad only on read":  {nil, []byte(aad)},
+	} {
+		t.Run(name, func(t *testing.T) {
+			om := g.NewWithT(t)
+			e := newT(om, key)
+
+			ciphertext, err := e.EncryptWithAAD([]byte(plaintext), m.sealed)
+			om.Expect(err).NotTo(g.HaveOccurred())
+
+			got, err := e.DecryptWithAAD(ciphertext, m.opened)
+			om.Expect(err).To(g.HaveOccurred())
+			om.Expect(got).To(g.BeNil())
 		})
 	}
 }
