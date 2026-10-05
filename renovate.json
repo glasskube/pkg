@@ -2,6 +2,14 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "postUpdateOptions": ["gomodTidy"],
   "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "matchSourceUrls": [
+        "https://github.com/golangci/golangci-lint"
+      ],
+      "groupName": "golangci-lint"
+    }
+  ]
   "customManagers": [
     {
       "customType": "regex",
