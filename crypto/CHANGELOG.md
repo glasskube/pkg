@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/glasskube/pkg/compare/crypto/v0.2.0...crypto/v0.2.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/onsi/gomega to v1.44.0 ([#16](https://github.com/glasskube/pkg/issues/16)) ([9a8d7d8](https://github.com/glasskube/pkg/commit/9a8d7d80dc41072542c33ce49ec14bee2d892d2c))
+
 ## [0.2.0](https://github.com/glasskube/pkg/compare/crypto/v0.1.0...crypto/v0.2.0) (2026-09-09)
 
 
