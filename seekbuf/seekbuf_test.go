@@ -1,9 +1,12 @@
 package seekbuf
 
 import (
+	"errors"
 	"io"
+	"os"
 	"strings"
 	"testing"
+	"testing/iotest"
 
 	g "github.com/onsi/gomega"
 )
@@ -44,6 +47,21 @@ func TestInMemoryFactory(t *testing.T) {
 
 func TestFileBufferFactory(t *testing.T) {
 	exerciseFactory(g.NewWithT(t), &FileBufferFactory{Dir: t.TempDir()})
+}
+
+func TestFileBufferFactoryRemovesTempFileOnCopyError(t *testing.T) {
+	om := g.NewWithT(t)
+	dir := t.TempDir()
+	f := &FileBufferFactory{Dir: dir}
+
+	src := io.MultiReader(strings.NewReader(payload), iotest.ErrReader(errors.New("aborted")))
+	ts, err := f.New(src)
+	om.Expect(err).To(g.HaveOccurred())
+	om.Expect(ts).To(g.BeNil())
+
+	entries, err := os.ReadDir(dir)
+	om.Expect(err).NotTo(g.HaveOccurred())
+	om.Expect(entries).To(g.BeEmpty())
 }
 
 func TestSetDefault(t *testing.T) {

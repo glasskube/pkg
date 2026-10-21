@@ -18,7 +18,15 @@ func (f *FileBufferFactory) New(src io.Reader) (result Buffer, rerr error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tempfile: %w", err)
 	}
-	defer func() { rerr = errors.Join(rerr, tmpFile.Close()) }()
+	defer func() {
+		rerr = errors.Join(rerr, tmpFile.Close())
+		if rerr != nil {
+			result = nil
+			if err := os.Remove(tmpFile.Name()); err != nil {
+				rerr = errors.Join(rerr, fmt.Errorf("failed to cleanup tempfile: %w", err))
+			}
+		}
+	}()
 	if _, err := io.Copy(tmpFile, src); err != nil {
 		return nil, fmt.Errorf("failed to copy source to tempfile: %w", err)
 	}
