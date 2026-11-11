@@ -2,6 +2,8 @@ module github.com/glasskube/pkg/crypto
 
 go 1.26
 
+toolchain go1.27.4
+
 require github.com/onsi/gomega v1.44.0
 
 require (
